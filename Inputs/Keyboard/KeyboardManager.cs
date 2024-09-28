@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Input;
 
-namespace Beryllium.MonoInput.Keyboard;
+namespace Beryllium.MonoInput.KeyboardInput;
 
 public static class KeyboardManager
 {
