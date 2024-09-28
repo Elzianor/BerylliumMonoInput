@@ -1,4 +1,4 @@
-﻿namespace Beryllium.UI.Inputs;
+﻿namespace Beryllium.MonoInput.Mouse;
 
 public class ButtonInfo
 {

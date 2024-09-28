@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 
-namespace Beryllium.UI.Inputs;
+namespace Beryllium.MonoInput.Mouse;
 
 public enum ButtonTypes
 {
