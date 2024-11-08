@@ -113,11 +113,13 @@ public static class MouseManager
     {
         MouseStatus.UpdateWheelsData(Mouse.GetState());
     }
-    
+
     public static void UpdateButtonsStates()
     {
         MouseStatus.UpdateButtonsStates(Mouse.GetState());
     }
+
+    public static ButtonsStates GetButtonsStates() => new ();
 
     public static void TriggerOnButtonsStatesChanged() => OnButtonsStatesChanged?.Invoke(new ButtonsStates());
     public static void TriggerOnPositionChanged(Point newPosition) => OnPositionChanged?.Invoke(newPosition);
