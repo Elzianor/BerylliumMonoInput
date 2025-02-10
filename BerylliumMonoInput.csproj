@@ -18,7 +18,7 @@
 
     <PropertyGroup>
     <PackageId>BerylliumMonoInput</PackageId>
-    <Version>1.0.3</Version>
+    <Version>1.0.4</Version>
     <Authors>Vladyslav Pysarenko</Authors>
     <Company>Beryllium Co.</Company>
     <Description>Input class library for handling MonoGame mouse/keyboard events.</Description>
