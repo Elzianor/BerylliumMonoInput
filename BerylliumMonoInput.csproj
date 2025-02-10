@@ -9,15 +9,20 @@
   <ItemGroup>
     <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.1.303" />
     <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="logo.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
-  <PropertyGroup>
+    <PropertyGroup>
+        <PackageIcon>logo.png</PackageIcon>
+    </PropertyGroup>
+
+    <PropertyGroup>
     <PackageId>BerylliumMonoInput</PackageId>
     <Version>1.0.3</Version>
     <Authors>Vladyslav Pysarenko</Authors>
     <Company>Beryllium Co.</Company>
     <Description>Input class library for handling MonoGame mouse/keyboard events.</Description>
-    <Copyright>Copyright © Beryllium Co. 2024</Copyright>
+    <Copyright>Copyright © Beryllium Co. 2025</Copyright>
     <PackageTags>Beryllium;MonoGame;Input</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/Elzianor/BerylliumMonoInput</RepositoryUrl>
