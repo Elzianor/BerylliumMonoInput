@@ -2,8 +2,8 @@
 
 public class ButtonInfo
 {
-    public ButtonTypes Type { get; set; }
-    public ButtonStates State { get; set; }
+    public ButtonTypes Type { get; }
+    public ButtonStates State { get; private set; }
 
     public bool Active => State != ButtonStates.None;
     public bool Idle => !Active;
@@ -16,7 +16,7 @@ public class ButtonInfo
         Type = type;
     }
 
-    public void SetState(bool isDown)
+    internal void SetState(bool isDown)
     {
         var oldState = State;
 
@@ -24,17 +24,19 @@ public class ButtonInfo
         {
             case ButtonStates.None:
                 if (isDown) State = ButtonStates.Pressed;
+
                 break;
             case ButtonStates.Pressed:
-                if (isDown) State = ButtonStates.Down;
-                else State = ButtonStates.Up;
+                State = isDown ? ButtonStates.Down : ButtonStates.Up;
+
                 break;
             case ButtonStates.Down:
                 if (!isDown) State = ButtonStates.Up;
+
                 break;
             case ButtonStates.Up:
-                if (isDown) State = ButtonStates.Pressed;
-                else State = ButtonStates.None;
+                State = isDown ? ButtonStates.Pressed : ButtonStates.None;
+
                 break;
         }
 

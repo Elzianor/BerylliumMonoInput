@@ -1,6 +1,4 @@
-﻿using Microsoft.Xna.Framework.Input;
-
-namespace Beryllium.MonoInput.KeyboardInput;
+﻿namespace Beryllium.MonoInput.KeyboardInput;
 
 public enum KeyStates
 {

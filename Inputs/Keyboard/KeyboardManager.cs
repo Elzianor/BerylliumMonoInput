@@ -1,6 +1,4 @@
-﻿using Microsoft.Xna.Framework.Input;
-
-namespace Beryllium.MonoInput.KeyboardInput;
+﻿namespace Beryllium.MonoInput.KeyboardInput;
 
 public static class KeyboardManager
 {
@@ -12,7 +10,7 @@ public static class KeyboardManager
 
     static KeyboardManager()
     {
-        ActiveKeys = new LinkedList<KeyStatus>();
+        ActiveKeys = [];
     }
 
     public static bool IsKeyPressed(Keys key)
@@ -38,17 +36,16 @@ public static class KeyboardManager
     public static void Update()
     {
         var newActiveKeys = Keyboard.GetState().GetPressedKeys();
-        
-        foreach (var activeKey in ActiveKeys)
-        {
-            activeKey.StateChanged = false;
-        }
+
+        foreach (var activeKey in ActiveKeys) activeKey.StateChanged = false;
 
         foreach (var newActiveKey in newActiveKeys)
         {
             var currentActiveKey = ActiveKeys.FirstOrDefault(ak => ak.Key == newActiveKey);
-            if (currentActiveKey == null) ActiveKeys.AddLast(new KeyStatus(newActiveKey));
-            else currentActiveKey.KeyState = KeyStates.Down;
+            if (currentActiveKey == null)
+                ActiveKeys.AddLast(new KeyStatus(newActiveKey));
+            else
+                currentActiveKey.KeyState = KeyStates.Down;
         }
 
         var currentKey = ActiveKeys.First;

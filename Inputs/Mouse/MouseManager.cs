@@ -1,7 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-
-namespace Beryllium.MonoInput.MouseInput;
+﻿namespace Beryllium.MonoInput.MouseInput;
 
 public enum ButtonTypes
 {
@@ -32,7 +29,9 @@ public class ButtonsStates
     {
         if (ReferenceEquals(first, second)) return true;
 
-        if (first is null || second is null) return false;
+        if (first is null ||
+            second is null)
+            return false;
 
         return first.LeftButtonState == second.LeftButtonState &&
                first.MiddleButtonState == second.MiddleButtonState &&
@@ -48,8 +47,7 @@ public class ButtonsStates
 
     public override bool Equals(object obj)
     {
-        if (obj is ButtonsStates other)
-            return this == other;
+        if (obj is ButtonsStates other) return this == other;
 
         return false;
     }
@@ -78,6 +76,7 @@ public static class MouseManager
 {
     public static MouseStatus MouseStatus { get; }
 
+    #region Events
     public delegate void ButtonsStatesChanged(ButtonsStates buttonsStates);
     public static event ButtonsStatesChanged OnButtonsStatesChanged;
 
@@ -89,6 +88,7 @@ public static class MouseManager
 
     public delegate void HorizontalWheelDeltaChanged(int delta);
     public static event HorizontalWheelDeltaChanged OnHorizontalWheelDeltaChanged;
+    #endregion
 
     static MouseManager()
     {
@@ -119,10 +119,28 @@ public static class MouseManager
         MouseStatus.UpdateButtonsStates(Mouse.GetState());
     }
 
-    public static ButtonsStates GetButtonsStates() => new ();
+    public static ButtonsStates GetButtonsStates()
+    {
+        return new ButtonsStates();
+    }
 
-    public static void TriggerOnButtonsStatesChanged() => OnButtonsStatesChanged?.Invoke(new ButtonsStates());
-    public static void TriggerOnPositionChanged(Point newPosition) => OnPositionChanged?.Invoke(newPosition);
-    public static void TriggerOnWheelDeltaChanged(int delta) => OnWheelDeltaChanged?.Invoke(delta);
-    public static void TriggerOnHorizontalWheelDeltaChanged(int delta) => OnHorizontalWheelDeltaChanged?.Invoke(delta);
+    internal static void TriggerOnButtonsStatesChanged()
+    {
+        OnButtonsStatesChanged?.Invoke(new ButtonsStates());
+    }
+
+    internal static void TriggerOnPositionChanged(Point newPosition)
+    {
+        OnPositionChanged?.Invoke(newPosition);
+    }
+
+    internal static void TriggerOnWheelDeltaChanged(int delta)
+    {
+        OnWheelDeltaChanged?.Invoke(delta);
+    }
+
+    internal static void TriggerOnHorizontalWheelDeltaChanged(int delta)
+    {
+        OnHorizontalWheelDeltaChanged?.Invoke(delta);
+    }
 }

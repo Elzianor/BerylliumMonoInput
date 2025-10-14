@@ -1,7 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-
-namespace Beryllium.MonoInput.MouseInput;
+﻿namespace Beryllium.MonoInput.MouseInput;
 
 public class MouseStatus
 {
@@ -10,6 +7,7 @@ public class MouseStatus
     public ButtonInfo RightButton { get; } = new(ButtonTypes.Right);
     public ButtonInfo XButton1 { get; } = new(ButtonTypes.XButton1);
     public ButtonInfo XButton2 { get; } = new(ButtonTypes.XButton2);
+
     private Point _position;
     public Point Position
     {
@@ -17,14 +15,17 @@ public class MouseStatus
         private set
         {
             if (_position == value) return;
+
             _position = value;
             MouseManager.TriggerOnPositionChanged(value);
         }
     }
+
     public int WheelCumulativeValue { get; private set; }
     public int HorizontalWheelCumulativeValue { get; private set; }
     public int DeltaX { get; private set; }
     public int DeltaY { get; private set; }
+
     private int _wheelDelta;
     public int WheelDelta
     {
@@ -32,10 +33,12 @@ public class MouseStatus
         private set
         {
             if (_wheelDelta == value) return;
+
             _wheelDelta = value;
             MouseManager.TriggerOnWheelDeltaChanged(value);
         }
     }
+
     private int _horizontalWheelDelta;
     public int HorizontalWheelDelta
     {
@@ -43,15 +46,18 @@ public class MouseStatus
         private set
         {
             if (_horizontalWheelDelta == value) return;
+
             _horizontalWheelDelta = value;
             MouseManager.TriggerOnHorizontalWheelDeltaChanged(value);
         }
     }
-    public bool IsAnyButtonActive => LeftButton.Active ||
-                                     MiddleButton.Active ||
-                                     RightButton.Active ||
-                                     XButton1.Active ||
-                                     XButton2.Active;
+
+    public bool IsAnyButtonActive =>
+        LeftButton.Active ||
+        MiddleButton.Active ||
+        RightButton.Active ||
+        XButton1.Active ||
+        XButton2.Active;
     public bool IsAnyButtonPressed => IsAnyButtonInState(ButtonStates.Pressed);
     public bool IsAnyButtonDown => IsAnyButtonInState(ButtonStates.Down);
     public bool IsAnyButtonUp => IsAnyButtonInState(ButtonStates.Up);
@@ -72,7 +78,7 @@ public class MouseStatus
         HorizontalWheelDelta = mouseState.HorizontalScrollWheelValue - HorizontalWheelCumulativeValue;
         HorizontalWheelCumulativeValue = mouseState.HorizontalScrollWheelValue;
     }
-    
+
     internal void UpdateButtonsStates(MouseState mouseState)
     {
         LeftButton.SetState(mouseState.LeftButton == ButtonState.Pressed);
