@@ -10,7 +10,7 @@
         <Version>1.1.0</Version>
         <Authors>Vladyslav Pysarenko</Authors>
         <Company>Beryllium Co.</Company>
-        <Description>Input class library for handling MonoGame mouse/keyboard events.</Description>
+        <Description>Input class library for handling MonoGame mouse/keyboard/gamepad events.</Description>
         <Copyright>Copyright © Beryllium Co. 2025</Copyright>
         <PackageTags>Beryllium;MonoGame;Input</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
