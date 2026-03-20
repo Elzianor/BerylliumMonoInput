@@ -1,83 +1,11 @@
-﻿namespace Beryllium.MonoInput.MouseInput;
-
-public enum ButtonTypes
-{
-    Left,
-    Middle,
-    Right,
-    XButton1,
-    XButton2
-}
-
-public enum ButtonStates
-{
-    None,
-    Pressed,
-    Down,
-    Up
-}
-
-public class ButtonsStates
-{
-    public ButtonStates LeftButtonState { get; } = MouseManager.MouseStatus.LeftButton.State;
-    public ButtonStates MiddleButtonState { get; } = MouseManager.MouseStatus.MiddleButton.State;
-    public ButtonStates RightButtonState { get; } = MouseManager.MouseStatus.RightButton.State;
-    public ButtonStates XButton1State { get; } = MouseManager.MouseStatus.XButton1.State;
-    public ButtonStates XButton2State { get; } = MouseManager.MouseStatus.XButton2.State;
-
-    public static bool operator ==(ButtonsStates first, ButtonsStates second)
-    {
-        if (ReferenceEquals(first, second)) return true;
-
-        if (first is null ||
-            second is null)
-            return false;
-
-        return first.LeftButtonState == second.LeftButtonState &&
-               first.MiddleButtonState == second.MiddleButtonState &&
-               first.RightButtonState == second.RightButtonState &&
-               first.XButton1State == second.XButton1State &&
-               first.XButton2State == second.XButton2State;
-    }
-
-    public static bool operator !=(ButtonsStates first, ButtonsStates second)
-    {
-        return !(first == second);
-    }
-
-    public override bool Equals(object obj)
-    {
-        if (obj is ButtonsStates other) return this == other;
-
-        return false;
-    }
-
-    public override int GetHashCode()
-    {
-        // Start with a prime number
-        var hash = 17;
-
-        hash ^= LeftButtonState.GetHashCode();
-        hash ^= MiddleButtonState.GetHashCode();
-        hash ^= RightButtonState.GetHashCode();
-        hash ^= XButton1State.GetHashCode();
-        hash ^= XButton2State.GetHashCode();
-
-        return hash;
-    }
-
-    public override string ToString()
-    {
-        return $"L: {LeftButtonState} M: {MiddleButtonState} R: {RightButtonState} X1: {XButton1State} X2: {XButton2State}";
-    }
-}
+﻿namespace BerylliumMonoInput.Inputs.Mouse;
 
 public static class MouseManager
 {
     public static MouseStatus MouseStatus { get; }
 
     #region Events
-    public delegate void ButtonsStatesChanged(ButtonsStates buttonsStates);
+    public delegate void ButtonsStatesChanged(MouseButtonsStates mouseButtonsStates);
     public static event ButtonsStatesChanged OnButtonsStatesChanged;
 
     public delegate void PositionChanged(Point newPosition);
@@ -95,9 +23,10 @@ public static class MouseManager
         MouseStatus = new MouseStatus();
     }
 
+    #region Updaters
     public static void Update()
     {
-        var mouseState = Mouse.GetState();
+        var mouseState = Microsoft.Xna.Framework.Input.Mouse.GetState();
 
         MouseStatus.UpdatePositionData(mouseState);
         MouseStatus.UpdateWheelsData(mouseState);
@@ -106,27 +35,29 @@ public static class MouseManager
 
     public static void UpdatePositionData()
     {
-        MouseStatus.UpdatePositionData(Mouse.GetState());
+        MouseStatus.UpdatePositionData(Microsoft.Xna.Framework.Input.Mouse.GetState());
     }
 
     public static void UpdateWheelsData()
     {
-        MouseStatus.UpdateWheelsData(Mouse.GetState());
+        MouseStatus.UpdateWheelsData(Microsoft.Xna.Framework.Input.Mouse.GetState());
     }
 
     public static void UpdateButtonsStates()
     {
-        MouseStatus.UpdateButtonsStates(Mouse.GetState());
+        MouseStatus.UpdateButtonsStates(Microsoft.Xna.Framework.Input.Mouse.GetState());
     }
+    #endregion
 
-    public static ButtonsStates GetButtonsStates()
+    public static MouseButtonsStates GetButtonsStates()
     {
-        return new ButtonsStates();
+        return new MouseButtonsStates();
     }
 
+    #region Event invokers
     internal static void TriggerOnButtonsStatesChanged()
     {
-        OnButtonsStatesChanged?.Invoke(new ButtonsStates());
+        OnButtonsStatesChanged?.Invoke(new MouseButtonsStates());
     }
 
     internal static void TriggerOnPositionChanged(Point newPosition)
@@ -143,4 +74,5 @@ public static class MouseManager
     {
         OnHorizontalWheelDeltaChanged?.Invoke(delta);
     }
+    #endregion
 }

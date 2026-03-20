@@ -1,53 +1,51 @@
-﻿namespace Beryllium.MonoInput.MouseInput;
+﻿namespace BerylliumMonoInput.Inputs.Mouse;
 
 public class MouseStatus
 {
-    public ButtonInfo LeftButton { get; } = new(ButtonTypes.Left);
-    public ButtonInfo MiddleButton { get; } = new(ButtonTypes.Middle);
-    public ButtonInfo RightButton { get; } = new(ButtonTypes.Right);
-    public ButtonInfo XButton1 { get; } = new(ButtonTypes.XButton1);
-    public ButtonInfo XButton2 { get; } = new(ButtonTypes.XButton2);
+    public MouseButtonInfo LeftButton { get; } = new(MouseButtonTypes.Left);
+    public MouseButtonInfo MiddleButton { get; } = new(MouseButtonTypes.Middle);
+    public MouseButtonInfo RightButton { get; } = new(MouseButtonTypes.Right);
+    public MouseButtonInfo XButton1 { get; } = new(MouseButtonTypes.XButton1);
+    public MouseButtonInfo XButton2 { get; } = new(MouseButtonTypes.XButton2);
 
-    private Point _position;
     public Point Position
     {
-        get => _position;
+        get;
         private set
         {
-            if (_position == value) return;
+            if (field == value) return;
 
-            _position = value;
+            field = value;
             MouseManager.TriggerOnPositionChanged(value);
         }
     }
 
+    private Point _positionDelta;
+    public Point PositionDelta => _positionDelta;
+
     public int WheelCumulativeValue { get; private set; }
     public int HorizontalWheelCumulativeValue { get; private set; }
-    public int DeltaX { get; private set; }
-    public int DeltaY { get; private set; }
 
-    private int _wheelDelta;
     public int WheelDelta
     {
-        get => _wheelDelta;
+        get;
         private set
         {
-            if (_wheelDelta == value) return;
+            if (field == value) return;
 
-            _wheelDelta = value;
+            field = value;
             MouseManager.TriggerOnWheelDeltaChanged(value);
         }
     }
 
-    private int _horizontalWheelDelta;
     public int HorizontalWheelDelta
     {
-        get => _horizontalWheelDelta;
+        get;
         private set
         {
-            if (_horizontalWheelDelta == value) return;
+            if (field == value) return;
 
-            _horizontalWheelDelta = value;
+            field = value;
             MouseManager.TriggerOnHorizontalWheelDeltaChanged(value);
         }
     }
@@ -62,10 +60,11 @@ public class MouseStatus
     public bool IsAnyButtonDown => IsAnyButtonInState(ButtonStates.Down);
     public bool IsAnyButtonUp => IsAnyButtonInState(ButtonStates.Up);
 
+    #region Updaters
     internal void UpdatePositionData(MouseState mouseState)
     {
-        DeltaX = mouseState.X - Position.X;
-        DeltaY = mouseState.Y - Position.Y;
+        _positionDelta.X = mouseState.X - Position.X;
+        _positionDelta.Y = mouseState.Y - Position.Y;
 
         Position = mouseState.Position;
     }
@@ -87,7 +86,9 @@ public class MouseStatus
         XButton1.SetState(mouseState.XButton1 == ButtonState.Pressed);
         XButton2.SetState(mouseState.XButton2 == ButtonState.Pressed);
     }
+    #endregion
 
+    #region Helpers
     private bool IsAnyButtonInState(ButtonStates state)
     {
         return LeftButton.State == state ||
@@ -96,4 +97,5 @@ public class MouseStatus
                XButton1.State == state ||
                XButton2.State == state;
     }
+    #endregion
 }

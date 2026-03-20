@@ -1,17 +1,17 @@
-﻿namespace Beryllium.MonoInput.MouseInput;
+﻿namespace BerylliumMonoInput.Inputs.Mouse;
 
-public class ButtonInfo
+public class MouseButtonInfo
 {
-    public ButtonTypes Type { get; }
+    public MouseButtonTypes Type { get; }
     public ButtonStates State { get; private set; }
 
-    public bool Active => State != ButtonStates.None;
+    public bool Active => State != ButtonStates.Idle;
     public bool Idle => !Active;
     public bool Pressed => State == ButtonStates.Pressed;
     public bool Down => State == ButtonStates.Down;
     public bool Up => State == ButtonStates.Up;
 
-    public ButtonInfo(ButtonTypes type)
+    public MouseButtonInfo(MouseButtonTypes type)
     {
         Type = type;
     }
@@ -22,7 +22,7 @@ public class ButtonInfo
 
         switch (State)
         {
-            case ButtonStates.None:
+            case ButtonStates.Idle:
                 if (isDown) State = ButtonStates.Pressed;
 
                 break;
@@ -35,7 +35,7 @@ public class ButtonInfo
 
                 break;
             case ButtonStates.Up:
-                State = isDown ? ButtonStates.Pressed : ButtonStates.None;
+                State = isDown ? ButtonStates.Pressed : ButtonStates.Idle;
 
                 break;
         }

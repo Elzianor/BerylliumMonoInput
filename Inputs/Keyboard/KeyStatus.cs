@@ -1,23 +1,15 @@
-﻿namespace Beryllium.MonoInput.KeyboardInput;
-
-public enum KeyStates
-{
-    Pressed,
-    Down,
-    Up
-}
+﻿namespace BerylliumMonoInput.Inputs.Keyboard;
 
 public class KeyStatus
 {
     public Keys Key { get; }
 
-    private KeyStates _keyState;
-    public KeyStates KeyState
+    public ButtonStates KeyState
     {
-        get => _keyState;
+        get;
         internal set
         {
-            _keyState = value;
+            field = value;
             StateChanged = true;
         }
     }

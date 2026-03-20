@@ -1,4 +1,4 @@
-﻿namespace Beryllium.MonoInput.KeyboardInput;
+﻿namespace BerylliumMonoInput.Inputs.Keyboard;
 
 public static class KeyboardManager
 {
@@ -15,17 +15,17 @@ public static class KeyboardManager
 
     public static bool IsKeyPressed(Keys key)
     {
-        return ActiveKeys.Any(keyStatus => keyStatus.Key == key && keyStatus.KeyState == KeyStates.Pressed);
+        return ActiveKeys.Any(keyStatus => keyStatus.Key == key && keyStatus.KeyState == ButtonStates.Pressed);
     }
 
     public static bool IsKeyDown(Keys key)
     {
-        return ActiveKeys.Any(keyStatus => keyStatus.Key == key && keyStatus.KeyState == KeyStates.Down);
+        return ActiveKeys.Any(keyStatus => keyStatus.Key == key && keyStatus.KeyState == ButtonStates.Down);
     }
 
     public static bool IsKeyUp(Keys key)
     {
-        return ActiveKeys.Any(keyStatus => keyStatus.Key == key && keyStatus.KeyState == KeyStates.Up);
+        return ActiveKeys.Any(keyStatus => keyStatus.Key == key && keyStatus.KeyState == ButtonStates.Up);
     }
 
     public static bool IsKeyActive(Keys key)
@@ -33,19 +33,21 @@ public static class KeyboardManager
         return IsKeyPressed(key) || IsKeyDown(key);
     }
 
+    #region Updaters
     public static void Update()
     {
-        var newActiveKeys = Keyboard.GetState().GetPressedKeys();
+        var newActiveKeys = Microsoft.Xna.Framework.Input.Keyboard.GetState().GetPressedKeys();
 
         foreach (var activeKey in ActiveKeys) activeKey.StateChanged = false;
 
         foreach (var newActiveKey in newActiveKeys)
         {
             var currentActiveKey = ActiveKeys.FirstOrDefault(ak => ak.Key == newActiveKey);
+
             if (currentActiveKey == null)
                 ActiveKeys.AddLast(new KeyStatus(newActiveKey));
             else
-                currentActiveKey.KeyState = KeyStates.Down;
+                currentActiveKey.KeyState = ButtonStates.Down;
         }
 
         var currentKey = ActiveKeys.First;
@@ -56,8 +58,8 @@ public static class KeyboardManager
 
             if (!currentKey.Value.StateChanged)
             {
-                if (currentKey.Value.KeyState != KeyStates.Up)
-                    currentKey.Value.KeyState = KeyStates.Up;
+                if (currentKey.Value.KeyState != ButtonStates.Up)
+                    currentKey.Value.KeyState = ButtonStates.Up;
                 else
                     ActiveKeys.Remove(currentKey);
             }
@@ -65,4 +67,5 @@ public static class KeyboardManager
             currentKey = nextKey;
         }
     }
+    #endregion
 }
