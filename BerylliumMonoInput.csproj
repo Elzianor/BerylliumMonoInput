@@ -7,11 +7,11 @@
 
     <PropertyGroup>
         <PackageId>BerylliumMonoInput</PackageId>
-        <Version>1.1.0</Version>
+        <Version>1.2.0</Version>
         <Authors>Vladyslav Pysarenko</Authors>
         <Company>Beryllium Co.</Company>
         <Description>Input class library for handling MonoGame mouse/keyboard/gamepad events.</Description>
-        <Copyright>Copyright © Beryllium Co. 2025</Copyright>
+        <Copyright>Copyright © Beryllium Co. 2026</Copyright>
         <PackageTags>Beryllium;MonoGame;Input</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryUrl>https://github.com/Elzianor/BerylliumMonoInput</RepositoryUrl>
@@ -20,6 +20,7 @@
 
     <ItemGroup>
         <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.4"/>
+        <PackageReference Include="NAudio" Version="2.3.0"/>
     </ItemGroup>
 
     <PropertyGroup>

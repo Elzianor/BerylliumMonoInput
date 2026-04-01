@@ -2,69 +2,66 @@
 
 public static class KeyboardManager
 {
-    public static readonly LinkedList<KeyStatus> ActiveKeys;
+    public static readonly LinkedList<KeyStatus> ActiveKeys = [];
 
     public static bool IsCtrlActive => IsKeyActive(Keys.LeftControl) || IsKeyActive(Keys.RightControl);
     public static bool IsShiftActive => IsKeyActive(Keys.LeftShift) || IsKeyActive(Keys.RightShift);
     public static bool IsAltActive => IsKeyActive(Keys.LeftAlt) || IsKeyActive(Keys.RightAlt);
 
-    static KeyboardManager()
-    {
-        ActiveKeys = [];
-    }
-
     public static bool IsKeyPressed(Keys key)
     {
-        return ActiveKeys.Any(keyStatus => keyStatus.Key == key && keyStatus.KeyState == ButtonStates.Pressed);
+        return ActiveKeys.Any(keyStatus => keyStatus.Key == key && keyStatus.State == ButtonStates.Pressed);
     }
 
     public static bool IsKeyDown(Keys key)
     {
-        return ActiveKeys.Any(keyStatus => keyStatus.Key == key && keyStatus.KeyState == ButtonStates.Down);
+        return ActiveKeys.Any(keyStatus => keyStatus.Key == key && keyStatus.State == ButtonStates.Down);
     }
 
     public static bool IsKeyUp(Keys key)
     {
-        return ActiveKeys.Any(keyStatus => keyStatus.Key == key && keyStatus.KeyState == ButtonStates.Up);
+        return ActiveKeys.Any(keyStatus => keyStatus.Key == key && keyStatus.State == ButtonStates.Up);
     }
 
     public static bool IsKeyActive(Keys key)
     {
-        return IsKeyPressed(key) || IsKeyDown(key);
+        return IsKeyPressed(key) || IsKeyDown(key) || IsKeyUp(key);
     }
 
     #region Updaters
     public static void Update()
     {
-        var newActiveKeys = Microsoft.Xna.Framework.Input.Keyboard.GetState().GetPressedKeys();
+        var currentKeys = Microsoft.Xna.Framework.Input.Keyboard.GetState().GetPressedKeys();
 
-        foreach (var activeKey in ActiveKeys) activeKey.StateChanged = false;
+        foreach (var activeKey in ActiveKeys) activeKey.IsHandled = false;
 
-        foreach (var newActiveKey in newActiveKeys)
+        foreach (var currentKey in currentKeys)
         {
-            var currentActiveKey = ActiveKeys.FirstOrDefault(ak => ak.Key == newActiveKey);
+            var activeKey = ActiveKeys.FirstOrDefault(keyStatus => keyStatus.Key == currentKey);
 
-            if (currentActiveKey == null)
-                ActiveKeys.AddLast(new KeyStatus(newActiveKey));
+            if (activeKey == null)
+                ActiveKeys.AddLast(new KeyStatus(currentKey));
             else
-                currentActiveKey.KeyState = ButtonStates.Down;
+                activeKey.State = ButtonStates.Down;
+
+            activeKey?.IsHandled = true;
         }
 
-        var currentKey = ActiveKeys.First;
+        var currentActiveKey = ActiveKeys.First;
 
-        while (currentKey != null)
+        while (currentActiveKey != null)
         {
-            var nextKey = currentKey.Next;
+            var nextActiveKey = currentActiveKey.Next;
 
-            if (!currentKey.Value.StateChanged)
+            if (!currentActiveKey.Value.IsHandled)
             {
-                if (currentKey.Value.KeyState != ButtonStates.Up)
-                    currentKey.Value.KeyState = ButtonStates.Up;
+                if (currentActiveKey.Value.State != ButtonStates.Up)
+                    currentActiveKey.Value.State = ButtonStates.Up;
                 else
-                    ActiveKeys.Remove(currentKey);
+                    ActiveKeys.Remove(currentActiveKey);
             }
 
-            currentKey = nextKey;
+            currentActiveKey = nextActiveKey;
         }
     }
     #endregion

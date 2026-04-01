@@ -1,24 +1,8 @@
 ﻿namespace BerylliumMonoInput.Inputs.Keyboard;
 
-public class KeyStatus
+public class KeyStatus(Keys key)
 {
-    public Keys Key { get; }
-
-    public ButtonStates KeyState
-    {
-        get;
-        internal set
-        {
-            field = value;
-            StateChanged = true;
-        }
-    }
-
-    internal bool StateChanged { get; set; }
-
-    public KeyStatus(Keys key)
-    {
-        Key = key;
-        StateChanged = true;
-    }
+    public Keys Key { get; } = key;
+    public ButtonStates State { get; internal set; } = ButtonStates.Pressed;
+    internal bool IsHandled { get; set; } = true;
 }
