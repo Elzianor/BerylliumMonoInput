@@ -2,103 +2,138 @@
 
 public static class MidiManager
 {
-    private static readonly Lock Lock = new();
+    private static readonly ConcurrentQueue<Action> MainThreadQueue;
+    private static readonly MidiWatcher Watcher;
+    private static readonly MidiMessageHandler MessageHandler;
+    private static readonly HashSet<int> CurrentNotes;
 
-    private static HashSet<MidiDeviceInfo> _knownDevices = [];
+    public static bool Disposed { get; private set; }
+    public static IReadOnlyList<MidiDeviceInfo> Devices => Watcher.Devices;
+    public static MidiDeviceInfo SelectedDevice { get; private set; }
+    public static readonly LinkedList<NoteStatus> ActiveNotes;
 
-    private static readonly HashSet<MidiDeviceInfo> CurrentDevices = [];
-    private static readonly Dictionary<int, NoteStatus> CurrentNotes = [];
-    private static readonly List<int> NotesToDelete = [];
+    #region Events
+    public static event Action OnDevicesChanged;
+    public static event Action<MidiDeviceInfo> OnDeviceSelected;
+    #endregion
 
-    public static List<NoteStatus> ActiveNotes { get; private set; } = [];
-
-    public static bool IsNotePressed(int note)
+    static MidiManager()
     {
-        return ActiveNotes.Any(noteStatus => noteStatus.Note == note && noteStatus.State == ButtonStates.Pressed);
+        MainThreadQueue = new ConcurrentQueue<Action>();
+
+        Watcher = new MidiWatcher();
+        Watcher.OnDevicesChanged += WatcherDevicesChangedHandler;
+        Watcher.Start();
+
+        MessageHandler = new MidiMessageHandler();
+        MessageHandler.OnNotePressed += MessageHandlerNotePressedHandler;
+        MessageHandler.OnNoteReleased += MessageHandlerNoteReleasedHandler;
+
+        CurrentNotes = [];
+        ActiveNotes = [];
     }
 
-    public static bool IsNoteDown(int note)
+    public static async void TryConnectToMidiDevice(string deviceId)
     {
-        return ActiveNotes.Any(noteStatus => noteStatus.Note == note && noteStatus.State == ButtonStates.Down);
-    }
+        if (Disposed) return;
 
-    public static bool IsNoteUp(int note)
-    {
-        return ActiveNotes.Any(noteStatus => noteStatus.Note == note && noteStatus.State == ButtonStates.Up);
-    }
+        var selectedDeviceId = await MessageHandler.OpenMidiDeviceAsync(deviceId);
 
-    public static bool IsNoteActive(int note)
-    {
-        return IsNotePressed(note) || IsNoteDown(note) || IsNoteUp(note);
+        SelectedDevice = Devices.FirstOrDefault(d => d.Id == selectedDeviceId);
+
+        MainThreadQueue.Enqueue(() => OnDeviceSelected?.Invoke(SelectedDevice));
     }
 
     public static void Update()
     {
-        // check if midi devices were connected/disconnected since previous Update() call
-        UpdateCurrentDevices();
+        if (Disposed) return;
 
-        // Detect connected
-        foreach (var device in CurrentDevices.Except(_knownDevices)) device.MidiIn.MessageReceived += MidiInMessageReceivedHandler;
+        Watcher.Update();
 
-        // Detect disconnected
-        foreach (var device in _knownDevices.Except(CurrentDevices)) device.MidiIn.MessageReceived -= MidiInMessageReceivedHandler;
+        while (MainThreadQueue.TryDequeue(out var action)) action();
 
-        _knownDevices = CurrentDevices;
+        UpdateActiveNotes();
+    }
 
-        // delete/mark Up notes
-        lock (Lock)
-        {
-            foreach (var note in NotesToDelete) CurrentNotes.Remove(note);
+    public static void Dispose()
+    {
+        if (Disposed) return;
 
-            ActiveNotes = CurrentNotes.Values.ToList();
+        SelectedDevice = null;
+        OnDeviceSelected?.Invoke(SelectedDevice);
 
-            NotesToDelete.Clear();
+        Watcher.OnDevicesChanged -= WatcherDevicesChangedHandler;
 
-            foreach (var kvp in CurrentNotes)
-                if (kvp.Value.State == ButtonStates.Up)
-                    NotesToDelete.Add(kvp.Key);
-        }
+        MessageHandler.OnNotePressed -= MessageHandlerNotePressedHandler;
+        MessageHandler.OnNoteReleased -= MessageHandlerNoteReleasedHandler;
+
+        OnDevicesChanged = null;
+
+        MainThreadQueue.Clear();
+
+        MessageHandler.Dispose();
+        Watcher.Dispose();
+
+        Disposed = true;
     }
 
     #region Event handlers
-    private static void MidiInMessageReceivedHandler(object sender, MidiInMessageEventArgs e)
+    private static void WatcherDevicesChangedHandler()
     {
-        if (e.MidiEvent is not NoteEvent noteEvent) return;
-
-        switch (noteEvent.CommandCode)
+        if (SelectedDevice != null &&
+            Devices.All(d => d.Id != SelectedDevice.Id))
         {
-            case MidiCommandCode.NoteOn:
-                UpdateCurrentNote(noteEvent.NoteNumber, noteEvent.Velocity > 0);
-
-                break;
-
-            case MidiCommandCode.NoteOff:
-                UpdateCurrentNote(noteEvent.NoteNumber, false);
-
-                break;
+            MessageHandler.CloseMidiDevice();
+            SelectedDevice = null;
+            OnDeviceSelected?.Invoke(SelectedDevice);
         }
+
+        OnDevicesChanged?.Invoke();
+    }
+
+    private static void MessageHandlerNotePressedHandler(int note)
+    {
+        MainThreadQueue.Enqueue(() => CurrentNotes.Add(note));
+    }
+
+    private static void MessageHandlerNoteReleasedHandler(int note)
+    {
+        MainThreadQueue.Enqueue(() => CurrentNotes.Remove(note));
     }
     #endregion
 
     #region Helpers
-    private static void UpdateCurrentDevices()
+    private static void UpdateActiveNotes()
     {
-        CurrentDevices.Clear();
+        foreach (var activeNote in ActiveNotes) activeNote.IsHandled = false;
 
-        for (var i = 0; i < MidiIn.NumberOfDevices; i++)
+        foreach (var currentNote in CurrentNotes)
         {
-            var cap = MidiIn.DeviceInfo(i);
-            CurrentDevices.Add(new MidiDeviceInfo(i, cap.ProductName, new MidiIn(i)));
+            var activeNote = ActiveNotes.FirstOrDefault(noteStatus => noteStatus.Note == currentNote);
+
+            if (activeNote == null)
+                ActiveNotes.AddLast(new NoteStatus(currentNote));
+            else
+                activeNote.State = ButtonStates.Down;
+
+            activeNote?.IsHandled = true;
         }
-    }
 
-    private static void UpdateCurrentNote(int note, bool isOn)
-    {
-        lock (Lock)
+        var currentActiveNote = ActiveNotes.First;
+
+        while (currentActiveNote != null)
         {
-            if (CurrentNotes.TryGetValue(note, out var status))
-                status.State = isOn ? ButtonStates.Down : ButtonStates.Up;
-            else if (isOn) CurrentNotes.Add(note, new NoteStatus(note));
+            var nextActiveNote = currentActiveNote.Next;
+
+            if (!currentActiveNote.Value.IsHandled)
+            {
+                if (currentActiveNote.Value.State != ButtonStates.Up)
+                    currentActiveNote.Value.State = ButtonStates.Up;
+                else
+                    ActiveNotes.Remove(currentActiveNote);
+            }
+
+            currentActiveNote = nextActiveNote;
         }
     }
     #endregion
